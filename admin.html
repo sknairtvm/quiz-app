@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Manage Quiz</title>
+    <link rel="stylesheet" href="admin.css">
+    <!-- Add Font Awesome CDN -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Login Form -->
+        <div id="login-form" style="display: block;">
+            <h1>Admin Login</h1>
+            <input type="text" id="admin-username" placeholder="Username" required>
+            <input type="password" id="admin-password" placeholder="Password" required>
+            <button onclick="adminLogin()"><i class="fas fa-sign-in-alt"></i> Login</button>
+            <p id="login-error" style="color: red; display: none;"></p>
+        </div>
+
+        <!-- Admin Dashboard -->
+        <div id="admin-dashboard" style="display: none;">
+            <h1>Admin Dashboard</h1>
+            <div id="admin-stats">
+                <div class="stat-box">
+                    <div class="stat-number" id="admin-total-users">0</div>
+                    <div class="stat-label">Number of Users</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-number" id="admin-total-questions">0</div>
+                    <div class="stat-label">No. of Questions</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-number" id="admin-total-quizzes">0</div>
+                    <div class="stat-label">Quiz Attended</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-number" id="admin-reported-questions">0</div>
+                    <div class="stat-label">Reported Questions</div>
+                </div>
+            </div>
+            <div class="tabs">
+                <button onclick="showTab('add-question')"><i class="fas fa-plus"></i> Add Question</button>
+                <button onclick="showTab('manage-questions')"><i class="fas fa-cog"></i> Manage Questions</button>
+                <button onclick="showTab('manage-users')"><i class="fas fa-users"></i> Manage Users</button>
+                <button onclick="showTab('reported-questions')"><i class="fas fa-flag"></i> Reported Questions</button>
+                <button onclick="showTab('upload-questions')"><i class="fas fa-upload"></i> Upload Questions</button>
+            </div>
+
+            <!-- Add Question Tab -->
+            <div id="add-question" class="tab-content" style="display: block;">
+                <h2>Add New Question</h2>
+                <form id="add-question-form" onsubmit="addQuestion(event)">
+                    <label for="question-text">Question:</label>
+                    <textarea id="question-text" placeholder="Enter the question" required></textarea>
+
+                    <div class="options-row">
+                        <div class="option-field">
+                            <label for="option1">Option 1:</label>
+                            <input type="text" id="option1" placeholder="Option 1" required>
+                        </div>
+                        <div class="option-field">
+                            <label for="option2">Option 2:</label>
+                            <input type="text" id="option2" placeholder="Option 2" required>
+                        </div>
+                    </div>
+                    <div class="options-row">
+                        <div class="option-field">
+                            <label for="option3">Option 3:</label>
+                            <input type="text" id="option3" placeholder="Option 3" required>
+                        </div>
+                        <div class="option-field">
+                            <label for="option4">Option 4:</label>
+                            <input type="text" id="option4" placeholder="Option 4" required>
+                        </div>
+                    </div>
+
+                    <label for="correct-answer">Correct Answer:</label>
+                    <select id="correct-answer" required>
+                        <option value="" disabled selected>Select correct option</option>
+                        <option value="1">Option 1</option>
+                        <option value="2">Option 2</option>
+                        <option value="3">Option 3</option>
+                        <option value="4">Option 4</option>
+                    </select>
+
+                    <button type="submit"><i class="fas fa-plus"></i> Add Question</button>
+                </form>
+                <p id="form-message" style="color: green; display: none;"></p>
+            </div>
+
+            <!-- Manage Questions Tab -->
+            <div id="manage-questions" class="tab-content" style="display: none;">
+                <h2>Manage Questions</h2>
+                <div class="pagination-controls">
+                    <label for="questions-per-page">Questions per page:</label>
+                    <select id="questions-per-page" onchange="loadQuestions()">
+                        <option value="10">10</option>
+                        <option value="25">25</option>
+                        <option value="50">50</option>
+                        <option value="100">100</option>
+                    </select>
+                    <button onclick="previousQuestionPage()"><i class="fas fa-chevron-left"></i> Previous</button>
+                    <span id="question-page-info"></span>
+                    <button onclick="nextQuestionPage()"><i class="fas fa-chevron-right"></i> Next</button>
+                    <button onclick="deleteSelectedQuestions()"><i class="fas fa-trash"></i> Delete Selected</button>
+                </div>
+                <table id="questions-table">
+                    <thead>
+                        <tr>
+                            <th><input type="checkbox" id="select-all-questions" onchange="toggleSelectAll('question-checkbox', this.checked)"></th>
+                            <th>Question</th>
+                            <th>Option 1</th>
+                            <th>Option 2</th>
+                            <th>Option 3</th>
+                            <th>Option 4</th>
+                            <th>Correct Answer</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="questions-body"></tbody>
+                </table>
+                <button onclick="showTab('add-question')"><i class="fas fa-arrow-left"></i> Back to Dashboard</button>
+            </div>
+
+            <!-- Manage Users Tab -->
+            <div id="manage-users" class="tab-content" style="display: none;">
+                <h2>Manage Users</h2>
+                <div class="pagination-controls">
+                    <label for="users-per-page">Users per page:</label>
+                    <select id="users-per-page" onchange="loadUsers()">
+                        <option value="10">10</option>
+                        <option value="25">25</option>
+                        <option value="50">50</option>
+                        <option value="100">100</option>
+                    </select>
+                    <button onclick="previousUserPage()"><i class="fas fa-chevron-left"></i> Previous</button>
+                    <span id="user-page-info"></span>
+                    <button onclick="nextUserPage()"><i class="fas fa-chevron-right"></i> Next</button>
+                    <button onclick="deleteSelectedUsers()"><i class="fas fa-trash"></i> Delete Selected</button>
+                </div>
+                <table id="users-table">
+                    <thead>
+                        <tr>
+                            <th><input type="checkbox" id="select-all-users" onchange="toggleSelectAll('user-checkbox', this.checked)"></th>
+                            <th>Username</th>
+                            <th>District</th>
+                            <th>Questions</th>
+                            <th>Time Taken</th>
+                            <th>Score</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="users-body"></tbody>
+                </table>
+                <button onclick="showTab('add-question')"><i class="fas fa-arrow-left"></i> Back to Dashboard</button>
+            </div>
+
+            <!-- Reported Questions Tab -->
+            <div id="reported-questions" class="tab-content" style="display: none;">
+                <h2>Reported Questions</h2>
+                <div class="pagination-controls">
+                    <label for="reports-per-page">Reports per page:</label>
+                    <select id="reports-per-page" onchange="loadReportedQuestions()">
+                        <option value="10">10</option>
+                        <option value="25">25</option>
+                        <option value="50">50</option>
+                        <option value="100">100</option>
+                    </select>
+                    <button onclick="previousReportPage()"><i class="fas fa-chevron-left"></i> Previous</button>
+                    <span id="report-page-info"></span>
+                    <button onclick="nextReportPage()"><i class="fas fa-chevron-right"></i> Next</button>
+                    <button onclick="clearReportedQuestions()"><i class="fas fa-trash"></i> Clear Reports</button>
+                </div>
+                <table id="reported-table">
+                    <thead>
+                        <tr>
+                            <th>Question</th>
+                            <th>Reported By</th>
+                            <th>Comment</th>
+                            <th>Reported On</th>
+                        </tr>
+                    </thead>
+                    <tbody id="reported-body"></tbody>
+                </table>
+                <button onclick="showTab('add-question')"><i class="fas fa-arrow-left"></i> Back to Dashboard</button>
+            </div>
+
+            <!-- Upload Questions Tab -->
+            <div id="upload-questions" class="tab-content" style="display: none;">
+                <h2>Upload Questions</h2>
+                <form id="upload-questions-form" onsubmit="uploadQuestions(event)">
+                    <label for="questions-file">Upload CSV File:</label>
+                    <input type="file" id="questions-file" accept=".csv" required>
+                    <p><small>CSV Format: question,option1,option2,option3,option4,correct_answer</small></p>
+                    <button type="submit"><i class="fas fa-upload"></i> Upload</button>
+                </form>
+                <p id="upload-message" style="color: green; display: none;"></p>
+                <button onclick="showTab('add-question')"><i class="fas fa-arrow-left"></i> Back to Dashboard</button>
+            </div>
+
+            <!-- Edit Question Modal -->
+            <div id="edit-question-modal" class="modal" style="display: none;">
+                <div class="modal-content">
+                    <h2>Edit Question</h2>
+                    <form id="edit-question-form" onsubmit="saveQuestionEdit(event)">
+                        <input type="hidden" id="edit-question-id">
+                        <label for="edit-question-text">Question:</label>
+                        <textarea id="edit-question-text" placeholder="Enter the question" required></textarea>
+
+                        <div class="options-row">
+                            <div class="option-field">
+                                <label for="edit-option1">Option 1:</label>
+                                <input type="text" id="edit-option1" placeholder="Option 1" required>
+                            </div>
+                            <div class="option-field">
+                                <label for="edit-option2">Option 2:</label>
+                                <input type="text" id="edit-option2" placeholder="Option 2" required>
+                            </div>
+                        </div>
+                        <div class="options-row">
+                            <div class="option-field">
+                                <label for="edit-option3">Option 3:</label>
+                                <input type="text" id="edit-option3" placeholder="Option 3" required>
+                            </div>
+                            <div class="option-field">
+                                <label for="edit-option4">Option 4:</label>
+                                <input type="text" id="edit-option4" placeholder="Option 4" required>
+                            </div>
+                        </div>
+
+                        <label for="edit-correct-answer">Correct Answer:</label>
+                        <select id="edit-correct-answer" required>
+                            <option value="1">Option 1</option>
+                            <option value="2">Option 2</option>
+                            <option value="3">Option 3</option>
+                            <option value="4">Option 4</option>
+                        </select>
+
+                        <button type="submit"><i class="fas fa-save"></i> Save</button>
+                        <button type="button" onclick="closeModal('edit-question-modal')"><i class="fas fa-times"></i> Cancel</button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Edit User Modal -->
+            <div id="edit-user-modal" class="modal" style="display: none;">
+                <div class="modal-content">
+                    <h2>Edit User</h2>
+                    <form id="edit-user-form" onsubmit="saveUserEdit(event)">
+                        <input type="hidden" id="edit-user-id">
+                        <label for="edit-username">Username:</label>
+                        <input type="text" id="edit-username" required>
+                        <label for="edit-district">District:</label>
+                        <select id="edit-district" required>
+                            <option value="Alappuzha">Alappuzha</option>
+                            <option value="Ernakulam">Ernakulam</option>
+                            <option value="Idukki">Idukki</option>
+                            <option value="Kannur">Kannur</option>
+                            <option value="Kasaragod">Kasaragod</option>
+                            <option value="Kollam">Kollam</option>
+                            <option value="Kottayam">Kottayam</option>
+                            <option value="Kozhikode">Kozhikode</option>
+                            <option value="Malappuram">Malappuram</option>
+                            <option value="Palakkad">Palakkad</option>
+                            <option value="Pathanamthitta">Pathanamthitta</option>
+                            <option value="Thiruvananthapuram">Thiruvananthapuram</option>
+                            <option value="Thrissur">Thrissur</option>
+                            <option value="Wayanad">Wayanad</option>
+                        </select>
+                        <label for="edit-num-questions">Number of Questions:</label>
+                        <input type="number" id="edit-num-questions" required>
+                        <label for="edit-time-taken">Time Taken (seconds):</label>
+                        <input type="number" id="edit-time-taken" required>
+                        <label for="edit-score">Score:</label>
+                        <input type="number" id="edit-score" required>
+                        <button type="submit"><i class="fas fa-save"></i> Save</button>
+                        <button type="button" onclick="closeModal('edit-user-modal')"><i class="fas fa-times"></i> Cancel</button>
+                    </form>
+                </div>
+            </div>
+
+            <button onclick="logoutAdmin()"><i class="fas fa-sign-out-alt"></i> Logout</button>
+        </div>
+    </div>
+    <script src="admin.js"></script>
+</body>
+</html>

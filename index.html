@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz Application</title>
+    <link rel="stylesheet" href="styles.css">
+    <!-- Add Font Awesome CDN -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Auth Screen -->
+        <div id="auth-screen">
+            <!-- Login Form -->
+            <div id="login-form" style="display: block;">
+                <h1>Login</h1>
+                <input type="text" id="login-username" placeholder="Username" required>
+                <input type="password" id="login-password" placeholder="Password" required>
+                <button onclick="login()"><i class="fas fa-sign-in-alt"></i> Login</button>
+                <p>Not registered? <a href="#" onclick="showRegisterForm()">Register here</a></p>
+                <p id="login-error" style="color: red; display: none;"></p>
+            </div>
+
+            <!-- Register Form -->
+            <div id="register-form" style="display: none;">
+                <h1>Register</h1>
+                <input type="text" id="register-username" placeholder="Username" required>
+                <input type="password" id="register-password" placeholder="Password" required>
+                <select id="register-district" required>
+                    <option value="" disabled selected>Select your district</option>
+                    <option value="Alappuzha">Alappuzha</option>
+                    <option value="Ernakulam">Ernakulam</option>
+                    <option value="Idukki">Idukki</option>
+                    <option value="Kannur">Kannur</option>
+                    <option value="Kasaragod">Kasaragod</option>
+                    <option value="Kollam">Kollam</option>
+                    <option value="Kottayam">Kottayam</option>
+                    <option value="Kozhikode">Kozhikode</option>
+                    <option value="Malappuram">Malappuram</option>
+                    <option value="Palakkad">Palakkad</option>
+                    <option value="Pathanamthitta">Pathanamthitta</option>
+                    <option value="Thiruvananthapuram">Thiruvananthapuram</option>
+                    <option value="Thrissur">Thrissur</option>
+                    <option value="Wayanad">Wayanad</option>
+                </select>
+                <button onclick="register()"><i class="fas fa-user-plus"></i> Register</button>
+                <p>Already registered? <a href="#" onclick="showLoginForm()">Login here</a></p>
+                <p id="register-error" style="color: red; display: none;"></p>
+            </div>
+        </div>
+
+        <!-- Start Screen -->
+        <div id="start-screen" style="display: none;">
+            <h1>Quiz Application</h1>
+            <p id="welcome-message"></p>
+            <div id="site-stats">
+                <div class="stat-box">
+                    <div class="stat-number" id="total-users">0</div>
+                    <div class="stat-label">Total Users</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-number" id="total-questions">0</div>
+                    <div class="stat-label">Total Questions</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-number" id="total-answers">0</div>
+                    <div class="stat-label">Total Answers Submitted</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-number" id="total-quizzes">0</div>
+                    <div class="stat-label">Total Quizzes Attended</div>
+                </div>
+            </div>
+            <select id="num-questions" required>
+                <option value="" disabled selected>Select number of questions</option>
+                <option value="10">10 Questions (5 min)</option>
+                <option value="25">25 Questions (15 min)</option>
+                <option value="50">50 Questions (30 min)</option>
+                <option value="100">100 Questions (60 min)</option>
+            </select>
+            <button onclick="startQuiz()"><i class="fas fa-play"></i> Start Quiz</button>
+            <button onclick="logoutUser()"><i class="fas fa-sign-out-alt"></i> Logout</button>
+        </div>
+
+        <!-- Quiz Screen -->
+        <div id="quiz-screen" style="display: none;">
+            <div id="progress"></div>
+            <div id="timer">Time Left: 00:00</div>
+            <h2 id="question"></h2>
+            <div id="options"></div>
+            <button onclick="nextQuestion()"><i class="fas fa-arrow-right"></i> Next</button>
+            <button onclick="showReportModal()" id="report-btn"><i class="fas fa-flag"></i> Report Question</button>
+        </div>
+
+        <!-- Report Question Modal -->
+        <div id="report-modal" class="modal" style="display: none;">
+            <div class="modal-content">
+                <h2>Report Question</h2>
+                <textarea id="report-comment" placeholder="What is wrong with this question?" required></textarea>
+                <button onclick="reportQuestion()"><i class="fas fa-flag"></i> Submit Report</button>
+                <button onclick="closeModal('report-modal')"><i class="fas fa-times"></i> Cancel</button>
+            </div>
+        </div>
+
+        <!-- Result Screen -->
+        <div id="result-screen" style="display: none;">
+            <h1>Quiz Completed!</h1>
+            <p id="final-score"></p>
+            <div>
+                <button onclick="showCorrectAnswers()"><i class="fas fa-eye"></i> Show Correct Answers</button>
+                <button onclick="showLeaderboard()"><i class="fas fa-trophy"></i> Show Leaderboard</button>
+            </div>
+            <div id="correct-answers" style="display: none;">
+                <h3>Correct Answers</h3>
+                <button onclick="downloadAnswersPDF()"><i class="fas fa-download"></i> Download PDF</button>
+                <table id="answers-table">
+                    <thead>
+                        <tr>
+                            <th>Question</th>
+                            <th>Your Answer</th>
+                            <th>Correct Answer</th>
+                        </tr>
+                    </thead>
+                    <tbody id="answers-body"></tbody>
+                </table>
+            </div>
+            <div id="leaderboard" style="display: none;">
+                <h3>Leaderboard ({{numQuestions}} Questions)</h3>
+                <table id="leaderboard-table">
+                    <thead>
+                        <tr>
+                            <th>Username</th>
+                            <th>District</th>
+                            <th>Questions</th>
+                            <th>Time Taken</th>
+                            <th>Score</th>
+                        </tr>
+                    </thead>
+                    <tbody id="high-scores"></tbody>
+                </table>
+            </div>
+            <button onclick="restartQuiz()"><i class="fas fa-redo"></i> Play Again</button>
+        </div>
+    </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.3/jspdf.plugin.autotable.min.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
